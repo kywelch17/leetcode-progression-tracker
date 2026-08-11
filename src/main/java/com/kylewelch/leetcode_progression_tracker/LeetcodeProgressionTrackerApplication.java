@@ -1,21 +1,21 @@
 package com.kylewelch.leetcode_progression_tracker;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Bean;
 
-@RestController
 @SpringBootApplication
 public class LeetcodeProgressionTrackerApplication {
-
-	@RequestMapping("/")
-	private String home() {
-		return "We are making a comeback, baby!";
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(LeetcodeProgressionTrackerApplication.class, args);
+		// SpringApplication.run(LeetcodeProgressionTrackerApplication.class, args);
+		SpringApplication app = new SpringApplication(LeetcodeProgressionTrackerApplication.class);
+		app.run(args);
 	}
 
 }
