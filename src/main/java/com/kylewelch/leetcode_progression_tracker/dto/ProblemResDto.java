@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import com.kylewelch.leetcode_progression_tracker.enums.Difficulty;
 
 public class ProblemResDto {
-    private long id;
+    private Long id;
     private String title;
     private Difficulty difficulty;
     private String note;

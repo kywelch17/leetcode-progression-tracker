@@ -6,15 +6,20 @@ import com.kylewelch.leetcode_progression_tracker.enums.Difficulty;
 
 import jakarta.persistence.*;
 @Entity
+@Table(name = "problems")
 public class Problem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "problem_id")
     private Long id;
-    private String title;
+
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
+
     @Column(length = 1500)
     private String note;
+
+    private String title;
     private String url;
     private LocalDateTime createdAt = LocalDateTime.now();
 
