@@ -40,7 +40,7 @@ public class Attempt {
         this.note = note;
     }
 
-    public Boolean getisSuccessful() {
+    public Boolean getIsSuccessful() {
         return isSuccessful;
     }
     public void setIsSuccessful(Boolean isSuccessful) {

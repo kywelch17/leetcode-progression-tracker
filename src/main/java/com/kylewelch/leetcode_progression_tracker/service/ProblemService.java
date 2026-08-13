@@ -8,18 +8,19 @@ import org.springframework.stereotype.Service;
 
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemReqDto;
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemResDto;
+import com.kylewelch.leetcode_progression_tracker.helper.MapperUtil;
 import com.kylewelch.leetcode_progression_tracker.model.Problem;
 import com.kylewelch.leetcode_progression_tracker.repository.ProblemRepository;
 
 @Service
 public class ProblemService {
     private final ProblemRepository problemRepository;
-    private final ModelMapper modelMapper;
+    private final MapperUtil mapper;
 
     // Constuctor injection
-    public ProblemService(ProblemRepository problemRepository, ModelMapper modelMapper) {
+    public ProblemService(ProblemRepository problemRepository, MapperUtil mapper) {
         this.problemRepository = problemRepository;
-        this.modelMapper = modelMapper;
+        this.mapper = mapper;
     }
 
     // Creating a problem
@@ -32,18 +33,13 @@ public class ProblemService {
 
         Problem savedProblem = problemRepository.save(problem);
 
-        return mapToDto(savedProblem);
+        return mapper.mapToDto(savedProblem, ProblemResDto.class);
     }
 
     // Get all problems
     public List<ProblemResDto> getAllProblems() {
         return problemRepository.findAll().stream()
-            .map(this::mapToDto)
+            .map(problem -> mapper.mapToDto(problem, ProblemResDto.class))
             .collect(Collectors.toList());
-    }
-
-    // Helper to convert Entity to Resp DTO
-    private ProblemResDto mapToDto(Problem problem) {
-        return modelMapper.map(problem, ProblemResDto.class);
     }
 }
