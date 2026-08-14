@@ -49,3 +49,4 @@ public class AttemptService {
             .map(attempt -> mapper.mapToDto(attempt, AttemptResDto.class));
     }
 }
+

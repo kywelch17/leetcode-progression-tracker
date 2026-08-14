@@ -3,7 +3,6 @@ package com.kylewelch.leetcode_progression_tracker.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemReqDto;

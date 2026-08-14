@@ -1,7 +1,9 @@
 package com.kylewelch.leetcode_progression_tracker.helper;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MapperUtil {
     private final ModelMapper modelMapper;
 
