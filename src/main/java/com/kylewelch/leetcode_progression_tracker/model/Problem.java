@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.kylewelch.leetcode_progression_tracker.enums.Difficulty;
 
 import jakarta.persistence.*;
+
 @Entity
 @Table(name = "problems")
 public class Problem {

@@ -1,7 +1,13 @@
 package com.kylewelch.leetcode_progression_tracker.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class AttemptReqDto {
+    @Size(max = 1500, message = "Note must not exceed 1500 characters")
     private String note;
+
+    @NotNull(message = "Success status is required")
     private Boolean isSuccessful;
 
     public AttemptReqDto() {

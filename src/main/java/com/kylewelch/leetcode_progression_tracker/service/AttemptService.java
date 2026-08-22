@@ -1,13 +1,11 @@
 package com.kylewelch.leetcode_progression_tracker.service;
 
 import java.util.List;
-import java.util.Optional;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.kylewelch.leetcode_progression_tracker.dto.AttemptReqDto;
 import com.kylewelch.leetcode_progression_tracker.dto.AttemptResDto;
-import com.kylewelch.leetcode_progression_tracker.helper.MapperUtil;
+import com.kylewelch.leetcode_progression_tracker.exception.ResourceNotFoundException;
 import com.kylewelch.leetcode_progression_tracker.model.Attempt;
 import com.kylewelch.leetcode_progression_tracker.model.Problem;
 import com.kylewelch.leetcode_progression_tracker.repository.AttemptRepository;
@@ -17,36 +15,49 @@ import com.kylewelch.leetcode_progression_tracker.repository.ProblemRepository;
 public class AttemptService {
     private final AttemptRepository attemptRepository;
     private final ProblemRepository problemRepository;
-    private final MapperUtil mapper;
 
-    public AttemptService(AttemptRepository attemptRepository, ProblemRepository problemRepository, MapperUtil mapper, ModelMapper modelMapper) {
+    public AttemptService(AttemptRepository attemptRepository, ProblemRepository problemRepository) {
         this.attemptRepository = attemptRepository;
         this.problemRepository = problemRepository;
-        this.mapper = mapper;
     }
 
     public AttemptResDto createAttemptForProblem(Long problemId, AttemptReqDto reqDto) {
         Problem problem = problemRepository.findById(problemId)
-            .orElseThrow(() -> new RuntimeException("Could not find problem " + problemId));
+            .orElseThrow(() -> new ResourceNotFoundException("Could not find problem with id: " + problemId));
 
-        Attempt attempt = mapper.mapToDto(reqDto, Attempt.class);
+        Attempt attempt = new Attempt();
+        attempt.setNote(reqDto.getNote());
+        attempt.setIsSuccessful(reqDto.getIsSuccessful());
         attempt.setProblem(problem);
 
         Attempt savedAttempt = attemptRepository.save(attempt);
-
-        return mapper.mapToDto(savedAttempt, AttemptResDto.class);
+        return toDto(savedAttempt);
     }
 
     public List<AttemptResDto> getAttemptsForProblem(Long problemId) {
+        if (!problemRepository.existsById(problemId)) {
+            throw new ResourceNotFoundException("Could not find problem with id: " + problemId);
+        }
         return attemptRepository.findByProblemId(problemId)
             .stream()
-            .map(attempt -> mapper.mapToDto(attempt, AttemptResDto.class))
+            .map(this::toDto)
             .toList();
     }
 
-    public Optional<AttemptResDto> getAttempt(Long attemptId) {
-        return attemptRepository.findById(attemptId)
-            .map(attempt -> mapper.mapToDto(attempt, AttemptResDto.class));
+    public AttemptResDto getAttempt(Long attemptId) {
+        Attempt attempt = attemptRepository.findById(attemptId)
+            .orElseThrow(() -> new ResourceNotFoundException("Could not find attempt with id: " + attemptId));
+        return toDto(attempt);
+    }
+
+    private AttemptResDto toDto(Attempt attempt) {
+        return new AttemptResDto(
+            attempt.getId(),
+            attempt.getNote(),
+            attempt.getIsSuccessful(),
+            attempt.getAttemptedAt()
+        );
     }
 }
+
 

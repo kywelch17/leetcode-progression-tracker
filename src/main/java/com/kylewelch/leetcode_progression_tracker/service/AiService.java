@@ -33,7 +33,7 @@ public class AiService {
                 %s
 
                 Rules:
-                    - If the user implies multiple attempts, omit one entry per try.
+                    - If the user implies multiple attempts, emit one entry per try.
                     - Pick the closest match from the list I provided you if the wording isn't exact match.
                     - Never fabricate a title.
                     - isSuccessful reflects that specific attempt.

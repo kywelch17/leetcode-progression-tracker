@@ -7,22 +7,18 @@ import org.springframework.stereotype.Service;
 
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemReqDto;
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemResDto;
-import com.kylewelch.leetcode_progression_tracker.helper.MapperUtil;
+import com.kylewelch.leetcode_progression_tracker.exception.ResourceNotFoundException;
 import com.kylewelch.leetcode_progression_tracker.model.Problem;
 import com.kylewelch.leetcode_progression_tracker.repository.ProblemRepository;
 
 @Service
 public class ProblemService {
     private final ProblemRepository problemRepository;
-    private final MapperUtil mapper;
 
-    // Constuctor injection
-    public ProblemService(ProblemRepository problemRepository, MapperUtil mapper) {
+    public ProblemService(ProblemRepository problemRepository) {
         this.problemRepository = problemRepository;
-        this.mapper = mapper;
     }
 
-    // Creating a problem
     public ProblemResDto createProblem(ProblemReqDto reqDto) {
         Problem problem = new Problem();
         problem.setTitle(reqDto.getTitle());
@@ -31,14 +27,30 @@ public class ProblemService {
         problem.setUrl(reqDto.getUrl());
 
         Problem savedProblem = problemRepository.save(problem);
-
-        return mapper.mapToDto(savedProblem, ProblemResDto.class);
+        return toDto(savedProblem);
     }
 
-    // Get all problems
     public List<ProblemResDto> getAllProblems() {
         return problemRepository.findAll().stream()
-            .map(problem -> mapper.mapToDto(problem, ProblemResDto.class))
+            .map(this::toDto)
             .collect(Collectors.toList());
     }
+
+    public ProblemResDto getProblemById(Long id) {
+        Problem problem = problemRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Problem not found with id: " + id));
+        return toDto(problem);
+    }
+
+    private ProblemResDto toDto(Problem problem) {
+        return new ProblemResDto(
+            problem.getId(),
+            problem.getTitle(),
+            problem.getDifficulty(),
+            problem.getNote(),
+            problem.getUrl(),
+            problem.getCreatedAt()
+        );
+    }
 }
+
