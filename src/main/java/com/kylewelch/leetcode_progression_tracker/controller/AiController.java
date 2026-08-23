@@ -2,10 +2,15 @@ package com.kylewelch.leetcode_progression_tracker.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 import com.kylewelch.leetcode_progression_tracker.service.AiService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.kylewelch.leetcode_progression_tracker.dto.AiReqDto;
+import com.kylewelch.leetcode_progression_tracker.dto.AiResDto;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -17,9 +22,8 @@ public class AiController {
         this.aiService = aiService;
     }
 
-    @GetMapping
-    public String ask(@RequestBody String prompt) {
-        return aiService.ask(prompt);
+    @PostMapping
+    public AiResDto ask(@RequestBody @Valid AiReqDto reqDto) {
+        return aiService.ask(reqDto.getNote());
     }
-    
 }
