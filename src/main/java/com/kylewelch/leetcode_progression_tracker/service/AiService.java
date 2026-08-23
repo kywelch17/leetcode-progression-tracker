@@ -71,13 +71,20 @@ public class AiService {
         
 
 
-        String response = chatClient.prompt()
-            .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-            .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, "analyze-" + System.currentTimeMillis()))
-            .system(system)
-            .user(note)
-            .call()
-            .content();
+        String response;
+        
+        try {
+            response = chatClient.prompt()
+                .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, "analyze-" + System.currentTimeMillis()))
+                .system(system)
+                .user(note)
+                .call()
+                .content();
+        } catch (Exception e) {
+            logger.error("There was a problem: ", e);
+            throw e;
+        }
 
         logger.info("AI raw response: {}", response);
 
@@ -101,11 +108,6 @@ public class AiService {
         if (title == null && successful == null) {
             logger.error("AI response missing both title and successful fields: {}", response);
             return new AiResDto("Could not understand. Please try again.");
-        }
-
-        // Handle null title (treat as empty)
-        if (title == null) {
-            title = "";
         }
 
         title = title.trim();
