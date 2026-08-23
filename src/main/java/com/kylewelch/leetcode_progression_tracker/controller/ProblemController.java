@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemReqDto;
 import com.kylewelch.leetcode_progression_tracker.dto.ProblemResDto;
+import com.kylewelch.leetcode_progression_tracker.model.LeetcodeProblem;
 import com.kylewelch.leetcode_progression_tracker.service.ProblemService;
 
 import java.util.List;
@@ -37,6 +38,11 @@ public class ProblemController {
     @GetMapping("/{id}")
     public ProblemResDto getProblemById(@PathVariable Long id) {
         return problemService.getProblemById(id);
+    }
+
+    @GetMapping("/leetcode")
+    public List<LeetcodeProblem> getAllLeetcodeProblems() {
+        return problemService.getAllLeetcodeProblems();
     }
 }
 
