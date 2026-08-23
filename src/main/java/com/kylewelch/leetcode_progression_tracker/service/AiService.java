@@ -17,6 +17,7 @@ import com.kylewelch.leetcode_progression_tracker.repository.AttemptRepository;
 import com.kylewelch.leetcode_progression_tracker.dto.AiResDto;
 import com.kylewelch.leetcode_progression_tracker.dto.AttemptResDto;
 
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -41,12 +42,11 @@ public class AiService {
         List<String> problemTitles = problemRepository.findAll().stream()
             .map(Problem::getTitle)
             .toList();
-        AiResponse aiResponse;
 
         String system = String.format("""
                 You are a Leetcode progression tracker. Extract the attempt from the users prompt.
 
-                AVAILABLE PROBLEMS (USE THESE TITLES EXACTLY CASE INSENSITIVE - IF TYPO, FIND CLOSEST ONE IF POSSIBLE)
+                AVAILABLE PROBLEMS (USE THESE TITLES EXACTLY CASE INSENSITIVE - IF SMALL TINY TYPO, FIND CLOSEST ONE IF POSSIBLE)
                 %s
 
                 For each attempt, respond with the following JSON format:
@@ -56,16 +56,16 @@ public class AiService {
                 }
 
                 Rules:
-                1) NEVER infer or associate a Leetcode problem title from informal speech, slang, jokes, or unrelated conversations
-                2) ONLY return a problem title if the user explicitly mentions a Leetcode problem BY ITS EXACT NAME from the list above
-                3) Examples of what NOT to match:
-                   - Casual conversation without Leetcode problem names → should return empty title
-                4) If the user's note does NOT contain an EXACT Leetcode problem name from the list above, return { "title": "", "successful": false }
-                5) If typo in problem reference, find closest one from the list above (if possible) - but ONLY if clearly attempting to reference a Leetcode problem
-                6) Set successful=true ONLY if they explicitly said they were able to complete it
-                7) Set successful=false if they explicitly said they weren't able to complete it, if unclear, or if no clear problem reference
-                8) WHEN IN DOUBT, RETURN EMPTY TITLE - it's better to miss a real attempt than to falsely create one
-                9) Respond ONLY with the JSON object - no additional text, explanation, or formatting.
+                1) YOU MUST ONLY RETURN A PROBLEM TITLE IF THE USER'S NOTE CONTAINS THE EXACT TEXT OF A LEETCODE PROBLEM TITLE FROM THE LIST ABOVE
+                2) DO NOT RETURN A PROBLEM TITLE BASED ON ASSOCIATIONS, SIMILARITY, INFERENCES, OR CONTEXT CLUES
+                3) DO NOT RETURN A PROBLEM TITLE FOR CASUAL CONVERSATION, JOKES, SLANG, OR UNRELATED STATEMENTS
+                4) TO RETURN A PROBLEM TITLE, THE USER'S NOTE MUST CONTAIN AT LEAST ONE OF THE EXACT PROBLEM TITLES LISTED ABOVE (CASE INSENSITIVE MATCH)
+                5) IF THE USER'S NOTE DOES NOT CONTAIN AN EXACT PROBLEM TITLE FROM THE LIST, RETURN { "title": "", "successful": false }
+                6) IF THERE IS A TYPO IN A PROBLEM TITLE REFERENCE, YOU MAY ATTEMPT TO FIND THE CLOSEST MATCH FROM THE LIST ABOVE
+                7) SET successful=true ONLY IF THE USER EXPLICITLY STATES THEY COMPLETED/SOLVED THE PROBLEM
+                8) SET successful=false IN ALL OTHER CASES (UNCLEAR, NOT COMPLETED, OR NO CLEAR PROBLEM REFERENCE)
+                9) WHEN IN DOUBT ABOUT WHETHER TO RETURN A PROBLEM TITLE, RETURN EMPTY TITLE
+                10) RESPOND ONLY WITH THE JSON OBJECT - NO ADDITIONAL TEXT, EXPLANATION, OR FORMATTING
                 """, String.join("\n", problemTitles));
 
         
@@ -79,15 +79,36 @@ public class AiService {
             .call()
             .content();
 
-        // Parse the JSON response
+        logger.info("AI raw response: {}", response);
+
+        // Parse the JSON response - be lenient, extract title and successful fields
+        String title = null;
+        Boolean successful = null;
         try {
-            aiResponse = objectMapper.readValue(response, AiResponse.class);
+            JsonNode root = objectMapper.readTree(response);
+            if (root.has("title")) {
+                title = root.get("title").asString(null);
+            }
+            if (root.has("successful")) {
+                successful = root.get("successful").booleanValue();
+            }
         } catch (Exception e) {
-            logger.error("Could not parse AI response: {}", response, e);
+            logger.error("Could not parse AI response as JSON: {}", response, e);
             return new AiResDto("Could not understand. Please try again.");
         }
 
-        String title = aiResponse.getTitle().trim();
+        // If we couldn't extract title or successful, treat as failure to parse
+        if (title == null && successful == null) {
+            logger.error("AI response missing both title and successful fields: {}", response);
+            return new AiResDto("Could not understand. Please try again.");
+        }
+
+        // Handle null title (treat as empty)
+        if (title == null) {
+            title = "";
+        }
+
+        title = title.trim();
         if (title.isEmpty()) {
             return new AiResDto("I could not get the problem of your Leetcode problem. Please try again.");
         }
@@ -98,7 +119,6 @@ public class AiService {
         }
 
         Problem problem = problemOpt.get();
-        Boolean successful = aiResponse.getSuccessful();
 
         // Create attempt
         Attempt attempt = new Attempt();
@@ -115,30 +135,5 @@ public class AiService {
         );
 
         return new AiResDto(attemptDto);
-    }
-
-    private static class AiResponse {
-        private String title;
-        private Boolean successful;
-        
-        public AiResponse() {
-
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public Boolean getSuccessful() {
-            return successful;
-        }
-
-        public void setSuccessful(Boolean successful) {
-            this.successful = successful;
-        }
     }
 }
