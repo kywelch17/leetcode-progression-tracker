@@ -1,87 +1,61 @@
-# CLAUDE.md
+# Project Overview
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This is a full-stack application that provides a dashboard for tracking a
+user's attempts at LeetCode problems.
 
-## Development Commands
+## Domain
 
-### Building and Running
-- Build the project: `./mvnw clean package`
-- Run the application: `./mvnw spring-boot:run`
-- Run tests: `./mvnw test`
-- Run a single test: `./mvnw test -Dtest=<TestClassName>`
+An Attempt represents a user's attempt at solving a LeetCode problem.
 
-### Docker
-- Build Docker image: `docker build -t leetcode-progression-tracker .`
-- Run with Docker compose: `docker compose up`
+Attempts can eventually be created through:
+- A form
+- The AI chat interface
 
-### API Endpoints
-- Problems: `GET/POST /api/problems` and `GET /api/problems/{id}`
-- Attempts: `GET/POST /api/problems/{problemId}/attempts` and `GET /api/problems/attempts/{attemptId}`
+The AI chat interface is not currently implemented.
 
-## Project Structure
+The `/model` directory contains the Attempt domain model. Inspect the code
+rather than assuming the structure of Attempt.
 
-### Architecture Overview
-This is a Spring Boot application tracking LeetCode problem progression with:
-- REST controllers handling API requests
-- Service layer containing business logic
-- Repository layer using Spring Data JPA
-- Entity models for database persistence
-- DTOs for API request/response objects
-- In-memory H2 database for storage
+## Development Instructions
 
-### Key Components
+### Before Making Changes
 
-#### Controllers (`src/main/java/com/kylewelch/leetcode_progression_tracker/controller/`)
-- `ProblemController`: CRUD operations for LeetCode problems
-- `AttemptController`: Manage attempts on problems
-- `AiController`: AI integration endpoints
-- `ApiController`: Health/status endpoints
+Read-only operations do not require approval. You may inspect files, search
+the codebase, run tests, run builds, and execute other non-mutating commands
+without asking.
 
-#### Services (`src/main/java/com/kylewelch/leetcode_progression_tracker/service/`)
-- `ProblemService`: Business logic for problem management
-- `AttemptService`: Business logic for attempt tracking
-- `AiService`: Integration with AI models
+Before making any change to the project:
 
-#### Models (`src/main/java/com/kylewelch/leetcode_progression_tracker/model/`)
-- `Problem`: Represents a LeetCode problem with title, difficulty, URL, notes
-- `Attempt`: Tracks attempts on problems with success status and notes
+1. Explain what you intend to change.
+2. Identify the files you intend to change.
+3. Explain why the change is necessary.
+4. Explain any important tradeoffs or alternatives.
 
-#### Repositories (`src/main/java/com/kylewelch/leetcode_progression_tracker/repository/`)
-- `ProblemRepository`: Spring Data JPA repository for Problem entities
-- `AttemptRepository`: Spring Data JPA repository for Attempt entities
+Wait for my approval before making the change.
 
-#### Configuration
-- `LeetcodeProgressionTrackerApplication`: Main Spring Boot application class
-- Configures ChatMemory for AI conversations (25 message window)
+### Git
 
-### Data Flow
-1. HTTP requests hit Controllers
-2. Controllers delegate to Services
-3. Services interact with Repositories
-4. Repositories persist/retrieve Entities from H2 database
-5. Services convert Entities to/from DTOs for API boundary
+Never commit code.
+Never push code.
 
-### External Integrations
-- Spring AI with OpenAI models for AI-powered features
-- H2 in-memory database (configured via spring-boot-starter-data-jpa)
-- Validation via spring-boot-starter-validation
+I will handle commits and pushes myself.
 
-## Common Development Tasks
+## Parking Lot
 
-### Adding New Features
-1. Create/update DTOs in `dto/` package
-2. Update Entity models if needed in `model/` package
-3. Modify Repository interfaces if new queries needed
-4. Implement business logic in Service classes
-5. Expose functionality via Controller endpoints
-6. Add tests in corresponding test classes
+These are ideas under consideration, not requirements. Do not implement them
+unless explicitly requested.
 
-### Database Changes
-- Entities use JPA annotations for table/column mapping
-- Changes to models automatically update schema via Hibernate
-- Initial data can be added via `data.sql` or `schema.sql` in resources
+- Implement the AI chat feature.
+- Evaluate whether the Problem entity/table should be removed in favor of
+  retrieving problems directly from the LeetCode GraphQL API.
+- Evaluate whether LeetCode problems should be cached.
+- Consider having the AI chat coach users through their problem-solving
+  process rather than simply providing answers.
+- Evaluate whether PostgreSQL is necessary.
 
-### AI Features
-- AI service uses Spring AI's ChatMemory for context retention
-- MessageWindowChatMemory limits conversations to 25 messages
-- AI endpoints typically in AiController
+## TODO
+
+- [ ] Create tests
+- [ ] Design frontend using the Figma design
+- [ ] Add user authentication
+- [ ] Deploy frontend to Render
