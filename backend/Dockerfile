@@ -1,8 +1,8 @@
 FROM amazoncorretto:21 AS build
 WORKDIR /app
 RUN yum install -y maven
-COPY pom.xml .
-COPY src ./src
+COPY backend/pom.xml .
+COPY backend/src ./src
 RUN mvn clean package
 
 FROM amazoncorretto:21
